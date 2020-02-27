@@ -22,83 +22,91 @@ return (SNList)
 # Excel file as input
 # Returns a dataframe with columns: 
 # .id (telemeter SN), Time, ElapsedTime (various units), BP parameters
-DSI_export_to_dataframe <- function (SelectedFile) {
-  SheetList <- excel_sheets(SelectedFile)
-  sheetloopiterator <- 1
-  SNList <- 1
-  SNfirstloop <- 1
-  DataList <- list()
-  while (sheetloopiterator <= length(SheetList)){
-    if(substr(SheetList[sheetloopiterator],0,1) == "P"){
-      SNList[SNfirstloop] <- substr(SheetList[sheetloopiterator], 20, 26)
+DSI_export_to_dataframe <- function (selected_file) {
+  sheet_list <- excel_sheets(selected_file)
+  sheet_loop_iterator <- 1
+  SN_list <- 1
+  SN_first_loop <- 1
+  import_data_list <- list()
+  while (sheet_loop_iterator <= length(sheet_list)){
+    if (substr(sheet_list[sheet_loop_iterator],0,1) == "P") {
+      SN_list[SN_first_loop] <- 
+        substr(sheet_list[sheet_loop_iterator], 20, 26)
       #Check if the SN is 6 or 7 digits
-      if(substr(SNList[SNfirstloop], 7, 7) == ")")
-        SNList[SNfirstloop] <- substr(SheetList[sheetloopiterator], 20, 25)
-      SNfirstloop <- SNfirstloop + 1
+      if(substr(SN_list[SN_first_loop], 7, 7) == ")")
+        SN_list[SN_first_loop] <- 
+          substr(sheet_list[sheet_loop_iterator], 20, 25)
+      SN_first_loop <- SN_first_loop + 1
     }
-    sheetloopiterator<- sheetloopiterator + 1}
-SNiterator <- 1
-while (SNiterator <= length(SNList)){
-  progress(SNiterator*12)
-  #Import the first sheet of the file by matching SN
-  ImportedSheet <- read_excel(SelectedFile, sheet = 
-    paste("Parameters_HD-X10 (",SNList[SNiterator],")",sep=""),
-    col_names = as.character(c(1:18))) %>%
-    # Select only the columns that we care about for analysis,
-    # excluding duplicates and battery life etc
-    select(-2, -3, -4, -5, -6, -7, -8, -14, -15, -17, -18) %>%
-    rename(Time = `1`, SBP = `9`, DBP = `10`, MAP = `11`, HR = `12`, 
-           Temp = `13`, Activity = `16`) %>%
-    tail(-3)
-  #Fix time from excel import
-  ImportedSheet$Time<-excel_numeric_to_date(as.numeric(ImportedSheet$Time), include_time = TRUE)
-  
-  #DSI S/N's can be 6 or 7 numbers long, we want SN to reflect this
-  SN <- substr(SheetList[SNiterator], 20, 26)
-  if(substr(SN, 7, 7) == ")")
-    SN <- substr(SheetList[SNiterator], 20, 25)
-  
-  #Create new columns for elapsed time  
-  ElapsedIterator <- 1
-  ElapsedTime <- 0
-  ImportedSheet$ElapsedTime<-NA
-  ImportedSheet$ElapsedTime[ElapsedIterator]<-ElapsedTime
-  
-  #Loop over entire recording to calculate elapsed time for each row
-  ElapsedIterator<-2
-  while(ElapsedIterator<=length(ImportedSheet$Time)){
-    ImportedSheet$ElapsedTime[ElapsedIterator] <- 
-    as.numeric(ImportedSheet$Time[ElapsedIterator])-as.numeric(ImportedSheet$Time[1])
-    ElapsedIterator<-ElapsedIterator+1
+    sheet_loop_iterator<- sheet_loop_iterator + 1}
+  SN_iterator <- 1
+  while (SN_iterator <= length(SN_list)) {
+    progress(SN_iterator*12)
+    #Import the first sheet of the file by matching SN
+    imported_sheet <- read_excel(
+      selected_file, 
+      sheet = 
+        paste("Parameters_HD-X10 (",SN_list[SN_iterator],")"
+              ,sep=""),
+      col_names = as.character(c(1:18))) %>%
+      # Select only the columns that we care about for analysis,
+      # excluding duplicates and battery life etc
+      select(-2, -3, -4, -5, -6, -7, -8, -14, -15, -17, -18) %>%
+      rename(Time = `1`, SBP = `9`, DBP = `10`, MAP = `11`, HR = `12`, 
+             Temp = `13`, Activity = `16`) %>%
+      tail(-3)
+    #Fix time from excel import
+    imported_sheet$Time<-excel_numeric_to_date(as.numeric(imported_sheet$Time),
+                                               include_time = TRUE)
+    
+    #DSI S/N's can be 6 or 7 numbers long, we want SN to reflect this
+    SN <- substr(sheet_list[SN_iterator], 20, 26)
+    if(substr(SN, 7, 7) == ")")
+      SN <- substr(sheet_list[SN_iterator], 20, 25)
+    
+    #Create new columns for elapsed time  
+    elapsed_iterator <- 1
+    imported_sheet$ElapsedTime <- NA
+    imported_sheet$ElapsedTime[elapsed_iterator] <- 0
+    
+    #Loop over entire recording to calculate elapsed time for each row
+    elapsed_iterator <- 2
+    while (elapsed_iterator <= length(imported_sheet$Time)){
+      imported_sheet$ElapsedTime[elapsed_iterator] <- 
+        as.numeric(imported_sheet$Time[elapsed_iterator]) - 
+        as.numeric(imported_sheet$Time[1])
+      elapsed_iterator <- elapsed_iterator+1
+    }
+    #Convert elapsed time into other units for ease of plotting later
+    imported_sheet$ElapsedTimeMin <- imported_sheet$ElapsedTime/60
+    imported_sheet$ElapsedTimeH <- imported_sheet$ElapsedTime/3600
+    imported_sheet$ElapsedTimeD <- imported_sheet$ElapsedTime/86400
+    #Convert elapsed time into only times for calculating lights on/off
+    imported_sheet$TimesOnly <- as.ITime(imported_sheet$Time)
+    #Rearrange columns for ease of reading
+    imported_sheet <- select(imported_sheet,Time,TimesOnly,ElapsedTime,
+                             ElapsedTimeMin,ElapsedTimeH,ElapsedTimeD,
+                             SBP,DBP,MAP,HR,Temp,Activity)
+    #Fix character vectors back into numeric
+    imported_sheet$SBP <- as.numeric(imported_sheet$SBP)
+    imported_sheet$DBP <- as.numeric(imported_sheet$DBP)
+    imported_sheet$MAP <- as.numeric(imported_sheet$MAP)
+    imported_sheet$HR <- as.numeric(imported_sheet$HR)
+    imported_sheet$Temp <- as.numeric(imported_sheet$Temp)
+    imported_sheet$Activity <- as.numeric(imported_sheet$Activity)
+    #Fix mean for physician's mean BP
+    imported_sheet$MAP <- imported_sheet$DBP + 
+      (imported_sheet$SBP-imported_sheet$DBP)/3
+    
+    #Create a list of all data frames imported from excel file  
+    import_data_list[[SN_list[SN_iterator]]] <- imported_sheet
+    SN_iterator <- SN_iterator + 1
   }
-  #Convert elapsed time into other units for ease of plotting later
-  ImportedSheet$ElapsedTimeMin<-ImportedSheet$ElapsedTime/60
-  ImportedSheet$ElapsedTimeH<-ImportedSheet$ElapsedTime/3600
-  ImportedSheet$ElapsedTimeD<-ImportedSheet$ElapsedTime/86400
-  #Convert elapsed time into only times for calculating lights on/off
-  ImportedSheet$TimesOnly <- as.ITime(ImportedSheet$Time)
-  #Rearrange columns for ease of reading
-  ImportedSheet<-select(ImportedSheet,Time,TimesOnly,ElapsedTime,ElapsedTimeMin,ElapsedTimeH,ElapsedTimeD,
-                        SBP,DBP,MAP,HR,Temp,Activity)
-  #Fix character vectors back into numeric
-  ImportedSheet$SBP<-as.numeric(ImportedSheet$SBP)
-  ImportedSheet$DBP<-as.numeric(ImportedSheet$DBP)
-  ImportedSheet$MAP<-as.numeric(ImportedSheet$MAP)
-  ImportedSheet$HR<-as.numeric(ImportedSheet$HR)
-  ImportedSheet$Temp<-as.numeric(ImportedSheet$Temp)
-  ImportedSheet$Activity<-as.numeric(ImportedSheet$Activity)
-  #Fix mean for physician's mean BP
-  ImportedSheet$MAP<-ImportedSheet$DBP+(ImportedSheet$SBP-ImportedSheet$DBP)/3
   
-  #Create a list of all data frames imported from excel file  
-  DataList[[SNList[SNiterator]]] <- ImportedSheet
-  SNiterator <- SNiterator + 1
-  }
-
-#Join all data into one table with a label column for SN
-AllData <- rbindlist(DataList, idcol = TRUE)
-
-return (AllData) 
+  #Join all data into one table with a label column for SN
+  all_import_data <- rbindlist(import_data_list, idcol = TRUE)
+  
+  return (all_import_data) 
 }
 
 # isolate_sbp function takes DSI_export_to_dataframe output and isolates SBP
