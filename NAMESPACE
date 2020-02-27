@@ -1,1 +1,7 @@
 exportPattern("^[[:alpha:]]+")
+import(dplyr)
+importFrom(janitor, excel_numeric_to_date)
+importFrom(data.table, as.ITime)
+importFrom(matrixStats, rowSds)
+importFrom(Rfast, colMins)
+importFrom(svMisc, progress)
