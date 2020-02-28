@@ -16,3 +16,4 @@ Imports:
     Rfast,
     matrixStats,
     svMisc
+RoxygenNote: 7.0.2

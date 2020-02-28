@@ -1,5 +1,14 @@
-# Typical day calculates BP parameters over a single circadian cycle
-# Description
+#' Calculate average parameters for each timepoint in a circadian cycle.
+#'
+#' This function calculates the typical parameters in a dataframe for one
+#' circadian cycle. Use this function on a dataframe generated from a DSI export
+#'  using the DSI_export_to_dataframe function.
+#' @param data A dataframe created using the DSI_export_to_dataframe function..
+#' @param lights_on Time when the lights turn on. (24H, as integer)
+#' @return A dataframe containing a column of circadian time and parameters.
+#' @examples
+#' typical_day(data = data, lights_on = 21)
+#' typical_day(data = data, lights_on = 6)
 
 typical_day <- function(data, lights_on) {
 
@@ -10,14 +19,7 @@ t_delta <- t_next-t_begin
 total_times <- as.numeric(86400 / t_delta)
 
 # initialize blank typical day for filling in
-typical_day <- tibble(Time = seq(from = t_begin, to = (t_begin+86390),
-                                 by = t_delta),
-                      SBP = c(1:total_times),
-                      DBP = c(1:total_times),MAP = c(1:total_times),
-                      HR = c(1:total_times),Temp = c(1:total_times),
-                      Activity = c(1:total_times))
 
-time_column <- typical_day$Time
 
 # initialize list of typical days for filling in
 typical_list <- list()
@@ -25,10 +27,20 @@ typical_list <- list()
 # loops over SNs
 SN_iterator <- 1
 while (SN_iterator <= length(data$.id %>% unique())) {
-
     # loops over times
     times_iterator <- 1
+
     single_SN_data <- filter(data, .id == (data$.id %>% unique())[SN_iterator])
+
+    typical_day <- tibble(Time = seq(from = t_begin, to = (t_begin+86390),
+                                     by = t_delta),
+                          SBP = c(1:total_times),
+                          DBP = c(1:total_times),MAP = c(1:total_times),
+                          HR = c(1:total_times),Temp = c(1:total_times),
+                          Activity = c(1:total_times))
+
+    time_column <- typical_day$Time
+
     while (times_iterator <= total_times) {
         single_SN_single_time <- filter(single_SN_data, TimesOnly ==
                                             time_column[times_iterator]) %>%
@@ -56,7 +68,7 @@ while (SN_iterator <= length(data$.id %>% unique())) {
                 names(typical_list)[[SN_iterator]] <-
                     paste(unique(data$.id)[SN_iterator])
             }
-            times_iterator<-times_iterator+1
+        times_iterator<-times_iterator+1
         }
         SN_iterator <- SN_iterator + 1
     }
@@ -65,35 +77,35 @@ while (SN_iterator <= length(data$.id %>% unique())) {
 all_typical <- typical_list %>% reduce(left_join, by = "Time")
 
 # Add columns for status of room lights ----
-lights_on <- 3600 * lights_on
-lights_off <- 12 * 3600 + lights_on
-if (lights_off > 86400) {
-    lights_off <- lights_off - 86400
+lights_iterator <- 2
+lights_initial <- as.numeric(as.ITime(lights_on*3600) - all_typical$Time[1])
+if (lights_initial<0) {lights_initial <- lights_initial*-1}
+all_typical$LightsTime <- lights_initial
+while (lights_iterator < length(all_typical$Time)) {
+    if (as.numeric(all_typical$Time[lights_iterator] -
+                   all_typical$Time[lights_iterator-1]) >= 0) {
+        LightsNext <- as.numeric(all_typical$Time[lights_iterator] -
+                                     all_typical$Time[lights_iterator-1])
+    }
+    if (as.numeric(all_typical$Time[lights_iterator] -
+                   all_typical$Time[lights_iterator-1])<0){
+        LightsNext <- as.numeric(all_typical$Time[lights_iterator]-all_typical$Time[lights_iterator-1])+86400
+    }
+    if (lights_initial+LightsNext==86400){lights_initial<-lights_initial-86400}
+    all_typical$LightsTime[lights_iterator]<-lights_initial+LightsNext
+    lights_iterator <- lights_iterator+1
+    lights_initial <- lights_initial+LightsNext
 }
+all_typical$LightsTime[length(all_typical$Time)] <-
+    lights_initial+as.numeric(all_typical$Time[length(all_typical$Time)]
+                              -all_typical$Time[length(all_typical$Time)-1])
 
-if (lights_on < lights_off) {
-    Lights_zero <- "Off"
-} else (Lights_zero <- "On")
-
-if (Lights_zero == "On") {
-    all_typical <- all_typical %>% mutate(
-        Lights = case_when(
-            Time >= 0 & Time < lights_off ~ "On",
-            Time >= lights_off & Time < lights_on ~ "Off",
-            Time >= lights_on ~ "Off"
-        )
+all_typical <- all_typical %>% mutate(
+    LightsOn = case_when(
+        LightsTime < 43200 ~ "Y",
+        LightsTime >= 43200 ~ "N"
     )
-}
-
-if (Lights_zero == "Off") {
-    all_typical <- all_typical %>% mutate(
-        Lights = case_when(
-            Time >= 0 & Time < lights_on ~ "Off",
-            Time >= lights_on & Time < lights_off ~ "On",
-            Time >= lights_off ~ "Off"
-        )
-    )
-}
+)
 # return ----
 return (all_typical)
 }
@@ -102,9 +114,9 @@ return (all_typical)
 typical_average <- function(data, avg_minutes) {
 
     rows_avg_iterator <- 1
-    seconds_per_row <- data$Time[2] - data$Time[1]
+    seconds_per_row <- data$LightsTime[2] - data$LightsTime[1]
     rows_per_hour <- 60*avg_minutes / seconds_per_row
-
+    data <- data %>% select(-LightsOn)
     while (rows_avg_iterator<=nrow(data)/rows_per_hour) {
         data[rows_avg_iterator,] <- data %>%
             slice((rows_avg_iterator*rows_per_hour-(rows_per_hour-1)):
@@ -117,6 +129,15 @@ typical_average <- function(data, avg_minutes) {
     }
 
     data <- head(data,nrow(data)/rows_per_hour)
+
+    data <- data %>% mutate(
+        LightsOn = case_when(
+            LightsTime < 43200 ~ "Y",
+            LightsTime >= 43200 ~ "N"
+        )
+    )
+
     return(data) }
+
 
 

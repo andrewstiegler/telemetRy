@@ -10,3 +10,5 @@ Prints 'Hello, world!'.
 \examples{
 hello()
 }
+
+# test
