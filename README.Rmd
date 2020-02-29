@@ -21,7 +21,7 @@ With an experiment open, navigate to Experiment > Export Data. In this pop-up,
 select subjects to export, a timerange to export, and make sure to un-check 
 "Pivot Compatible Sheets"
 
-![Screenshot of DSI Ponemah export screen](/Users/DSI/Documents/R/telemetRy/images/ponemah_export_pivot.png)
+![Screenshot of DSI Ponemah export screen](images/ponemah_export_pivot.png)
 
 
 

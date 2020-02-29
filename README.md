@@ -18,7 +18,7 @@ pop-up, select subjects to export, a timerange to export, and make sure
 to un-check “Pivot Compatible Sheets”
 
 ![Screenshot of DSI Ponemah export
-screen](/Users/DSI/Documents/R/telemetRy/images/ponemah_export_pivot.png)
+screen](images/ponemah_export_pivot.png)
 
 Select “Export” and an Excel file will be generated. To import that
 Excel file into R, utilize the DSI\_export\_to\_dataframe function:
