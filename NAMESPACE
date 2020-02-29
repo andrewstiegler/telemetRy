@@ -1,5 +1,6 @@
 exportPattern("^[[:alpha:]]+")
 import(dplyr)
+import(purrr)
 importFrom(janitor, excel_numeric_to_date)
 importFrom(data.table, as.ITime)
 importFrom(matrixStats, rowSds)

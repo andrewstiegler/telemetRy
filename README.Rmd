@@ -7,12 +7,16 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(telemetRy)
 ```
 
 ## Description
 This is a package for interacting with telemetry data using R. Specific 
 functions for importing data from DSI telemetry systems are included, as well 
 as functions for analyzing telemetry data over various timescales.
+
+Note: the author of this package has no affiliation with 
+[DSI](https://www.datasci.com)
 
 ## Installation
 telemetRy is available on github. To install telemetRy, you'll need:    
@@ -48,6 +52,14 @@ exported_data <- DSI_export_to_dataframe('path_to_DSI_export')
 ```
 
 The export will be a dataframe:
+```{r echo=FALSE}
+head(sample_BP_data)
+```
+Where the .id column indicates the subject serial number, and the Time column 
+is the real time of data acquisition. Several useful time columns are generated, 
+including a column for time-of-day only, and elapsed time since acquisition 
+started in several units. The rest of the telemetry parameters are named.
+
 
 ## Calculating typical day from DSI export
 After importing into R, pass the imported dataframe to the typical_day function, 
@@ -60,10 +72,13 @@ typical_day_output <- typical_day(data = exported_data, lights_on = 6)
 ## Other useful functions
 Several functions are available for isolating BP parameters from datasets. 
 Separate functions exist for the entire dataset or for typical_day averages. 
-```{r eval=FALSE}
+```{r eval=TRUE}
 # For example, to isolate SBP from entire dataset
-export_data_sbp <- isolate_sbp(data = exported_data)
+export_data_sbp <- isolate_sbp(data = sample_BP_data)
+export_data_sbp
+```
 
+```{r eval=FALSE}
 # To isolate SBP from a typical_day
 typical_day_sbp <- typical_sbp(data = typical_day_output)
 ```
