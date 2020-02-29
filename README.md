@@ -9,6 +9,26 @@ This is a package for interacting with telemetry data using R. Specific
 functions for importing data from DSI telemetry systems are included, as
 well as functions for analyzing telemetry data over various timescales.
 
+## Installation
+
+telemetRy is available on github. To install telemetRy, you’ll need:  
+[R \> 3](https://www.r-project.org "R \> 3.4")  
+[devtools](https://github.com/r-lib/devtoolsdevtools "devtools") package
+from Hadley Wickham
+
+First, install devtools:
+
+``` r
+install.packages('devtools')
+```
+
+Then install telemetRy:
+
+``` r
+devtools::install_github(repo = 'andrewstiegler/telemetRy')
+library(telemetRy)
+```
+
 ## Importing DSI data
 
 First data must be exported from DSI’s Ponemah software.
@@ -36,5 +56,19 @@ function, and specify the beginning of the light cycle (in 24H).
 
 ``` r
 # For example, room lights turn on at 6AM
-typical_day(data = exported_data, lights_on = 6)
+typical_day_output <- typical_day(data = exported_data, lights_on = 6)
+```
+
+## Other useful functions
+
+Several functions are available for isolating BP parameters from
+datasets. Separate functions exist for the entire dataset or for
+typical\_day averages.
+
+``` r
+# For example, to isolate SBP from entire dataset
+export_data_sbp <- isolate_sbp(data = exported_data)
+
+# To isolate SBP from a typical_day
+typical_day_sbp <- typical_sbp(data = typical_day_output)
 ```

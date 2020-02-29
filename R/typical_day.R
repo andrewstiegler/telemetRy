@@ -3,12 +3,15 @@
 #' This function calculates the typical parameters in a dataframe for one
 #' circadian cycle. Use this function on a dataframe generated from a DSI export
 #'  using the DSI_export_to_dataframe function.
-#' @param data A dataframe created using the DSI_export_to_dataframe function..
-#' @param lights_on Time when the lights turn on. (24H, as integer)
+#' @describeIn typical_day
+#' @param data A dataframe created using the DSI_export_to_dataframe function.
+#' @param lights_on Time when the lights turn on. (24H)
+#' @param avg_mintes Number of minutes to average over (integer)
 #' @return A dataframe containing a column of circadian time and parameters.
 #' @examples
 #' typical_day(data = data, lights_on = 21)
 #' typical_day(data = data, lights_on = 6)
+#' typical_average(data = data, avg_minutes = 20)
 
 typical_day <- function(data, lights_on) {
 
@@ -110,7 +113,9 @@ all_typical <- all_typical %>% mutate(
 return (all_typical)
 }
 
-# Fit circadian cycle to cosine wave
+#' @describeIn typical_day Average typical_day over specified time interval.
+
+# Arbitrary average of typical_day data
 typical_average <- function(data, avg_minutes) {
 
     rows_avg_iterator <- 1
@@ -138,6 +143,4 @@ typical_average <- function(data, avg_minutes) {
     )
 
     return(data) }
-
-
 
