@@ -15,7 +15,17 @@
 # calculate average parameters in dark or light conditions ####
 # circadian_avg function takes imported dataframe and lights_on time as input
 # returns list of 2 elements - dark parameters, and light parameters
+
 circadian_avg <- function (data, lights_on) {
+    # Check inputs
+    df_check <- is.data.frame(data)
+    if (!df_check) return("'data' must be dataframe.")
+    lights_on_check <- missing(lights_on)
+    if (lights_on_check) {
+        lights_on <- 6
+        print("'lights_on' not provided. Setting to default 6")
+    }
+
     data_length <- length(data$.id %>% unique())
     SNs <- data$.id %>% unique()
 

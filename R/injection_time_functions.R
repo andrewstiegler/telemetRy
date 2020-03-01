@@ -3,7 +3,7 @@
 #' This function calculates the time since injection / break in dataset. Use
 #' this function on a dataframe generated from a DSI export using the
 #' DSI_export_to_dataframe function.
-#' @describeIn add_intime Add injection time column to dataset.
+#' @describeIn add_injtime Add injection time column to dataset.
 #' @param data A dataframe created using the DSI_export_to_dataframe function.
 #' @param injection_time Time before but close to the injection (24H)
 #' @return A dataframe containing a column for time since injection / break and
@@ -11,7 +11,7 @@
 #' injection time.
 #' @examples
 #' add_injtime(data = data, lights_on = 21)
-#' post_inj_sbp(data = add_injtime_output)
+#' isolate_postinj(data = add_injtime_output, parameter = "SBP")
 
 # faster implementation of adding injection time
 add_injtime <- function (data, injection_time) {
@@ -75,46 +75,18 @@ add_injtime <- function (data, injection_time) {
 # returns only SBP columns and time columns
 # same for all of DBP, MAP, HR, Temp, Activity
 
-#' @describeIn add_intime Isolate SBP from dataset after adding injection time.
-post_inj_sbp <- function (data) {
-  sbp <- select(data, 1, 2, grep("SBP", colnames(data)))
-  sbp$mean <- sbp %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (sbp)
-}
-
-#' @describeIn add_intime Isolate DBP from dataset after adding injection time.
-post_inj_dbp <- function (data) {
-  dbp <- select(data, 1, 2, grep("DBP", colnames(data)))
-  dbp$mean <- dbp %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (dbp)
-}
-
-#' @describeIn add_intime Isolate MAP from dataset after adding injection time.
-post_inj_map <- function (data) {
-  map <- select(data, 1, 2, grep("MAP", colnames(data)))
-  map$mean <- map %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (map)
-}
-
-#' @describeIn add_intime Isolate temperature from dataset after adding
-#' injection time.
-post_inj_temp <- function (data) {
-  temp <- select(data, 1, 2, grep("Temp", colnames(data)))
-  temp$mean <- temp %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (temp)
-}
-
-#' @describeIn add_intime Isolate HR from dataset after adding injection time.
-post_inj_HR <- function (data) {
-  HR <- select(data, 1, 2, grep("HR", colnames(data)))
-  HR$mean <- HR %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (HR)
-}
-
-#' @describeIn add_intime Isolate activity from dataset after adding injection
+#' @describeIn add_injtime Isolate parameter from dataset after adding injection
 #' time.
-post_inj_activity <- function (data) {
-  activity <- select(data, 1, 2, grep("Activity", colnames(data)))
-  activity$mean <- activity %>% select(-1,-2) %>% rowMeans(na.rm = TRUE)
-  return (activity)
+isolate_postinj <- function(data, parameter) {
+  param_missing <- missing(parameter)
+  if (param_missing) return ("No parameter - please set parameter to isolate")
+  if (sum(grep(paste(parameter),colnames(data))) == 0) {
+    return ("Parameter not found in dataset")
+  }
+  if (colnames(data)[1] != "Time") {
+    return ("First column is not Time column - wrong data?")
+  }
+  postinj_param <- select(data, 1, grep(paste(parameter),
+                                        colnames(data)))
+  return (postinj_param)
 }

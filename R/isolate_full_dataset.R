@@ -3,7 +3,6 @@
 #' @description
 #' These functions take the output of DSI_export_to_dataframe and outputs a new
 #' dataframe for the specified parameter.
-#' @describeIn isolate_sbp
 #' @param data A dataframe which is the output from DSI_export_to_dataframe.
 #' @return A dataframe with the Time and elapsed_time columns from the input,
 #' and a column for each subject appended with the parameter (i.e. SBP).
@@ -18,6 +17,9 @@
 #' @describeIn isolate_sbp Isolate SBP from complete dataframe.
 # isolate_sbp function takes DSI_export_to_dataframe output and isolates SBP
 # keeps time columns, each SN gets an SBP column named "SNSBP"
+
+
+
 isolate_sbp <- function (data) {
     ids <- data$.id %>% unique()
     sbp_1 <- filter(data, .id==ids[[1]]) %>% select(Time, SBP)

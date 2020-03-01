@@ -13,6 +13,11 @@
 
 # i.e. output of post_inj_sbp
 # caclulates minimum 5-minute average after injection (200s to 6 hrs post-inj)
+#' @import dplyr
+#' @import magrittr
+#' @importFrom Rfast colMins
+#' @export post_inj_min
+
 post_inj_min <- function (data, duration) {
 
     SNs <- colnames(select(data,-mean,-se,-InjTime,-InjTimeH))

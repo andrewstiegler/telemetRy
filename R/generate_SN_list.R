@@ -11,8 +11,21 @@
 # generate_SN_list function takes filepath of DSI exported Excel file as input
 # Returns list of telemeter SNs as vector
 
+#' @import readxl
+#' @import dplyr
+#' @import magrittr
+#' @export generate_SN_list
 generate_SN_list <- function(selected_file) {
+    filetype_check <- readxl::excel_format(selected_file)
+    if (filetype_check != "xlsx") {
+        return("Must select Excel file")
+    }
+
     sheet_list <- excel_sheets(selected_file)
+    if (!"Parameters" %in% sheet_list) {
+        return("No 'Parameters' sheets. Can't import this file.")
+    }
+
     SN_list <- 1
     SN_first_loop <- 1
     for (sheet_loop_iterator in 1:length(sheet_list)){
