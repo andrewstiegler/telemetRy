@@ -1,48 +1,27 @@
 #' Isolate parameters from typical_day dataframe.
 #'
 #' @description
-#' These functions take the output of typical_day and outputs a new
+#' Theis function takes the output of typical_day and outputs a new
 #' dataframe for the specified parameter.
-#' @describeIn typical_sbp
 #' @param data A dataframe which is the output from typical_day.
-#' @return A dataframe with the Time and elapsed_time columns from the input,
+#' @param parameter Name of a parameter in the dataset, in quotes.
+#' @return A dataframe with the Time columns from the input,
 #' and a column for each subject appended with the parameter (i.e. SBP).
-#' Additionally a column for the mean of all subjects in the dataset.
-#' @examples
-#' typical_sbp(typical_day_output)
-#' typical_dbp(typical_day_output)
-#' typical_map(typical_day_output)
-#' typical_temp(typical_day_output)
-#' typical_HR(typical_day_output)
-#' typical_activity(typical_day_output)
-#' @describeIn typical_sbp Isolate SBP from typical_day dataframe.
+#'  @examples
+#' isolate_typical(data = typical_day_output, parameter = "SBP")
+#' isolate_typical(data = typical_day_output, parameter = "HR")
 
-# isolate typical parameters from typical day dataset
-typical_sbp <- function (data) {
-    sbp_typical <- select(data, 1, grep("SBP", colnames(data)))
-    return (sbp_typical)}
-
-#' @describeIn typical_sbp Isolate DBP from typical_day dataframe.
-typical_dbp <- function (data) {
-    dbp_typical <- select(data, 1, grep("Sys", colnames(data)))
-    return (dbp_typical)}
-
-#' @describeIn typical_sbp Isolate MAP from typical_day dataframe.
-typical_map <- function (data) {
-    map_typical <- select(data, 1, grep("MAP", colnames(data)))
-    return (map_typical)}
-
-#' @describeIn typical_sbp Isolate temperature from typical_day dataframe.
-typical_temp <- function (data) {
-    temp_typical <- select(data, 1, grep("Temp", colnames(data)))
-    return (temp_typical)}
-
-#' @describeIn typical_sbp Isolate HR from typical_day dataframe.
-typical_HR <- function (data) {
-    HR_typical <- select(data, 1, grep("HR", colnames(data)))
-    return (HR_typical)}
-
-#' @describeIn typical_sbp Isolate activity from typical_day dataframe.
-typical_activity <- function (data) {
-    activity_typical <- select(data, 1, grep("Activity", colnames(data)))
-    return (typical_activity)}
+# isolate parameter in general
+isolate_typical <- function (data, parameter) {
+    param_missing <- missing(parameter)
+    if (param_missing) return ("No parameter - please set parameter to isolate")
+    if (sum(grep(paste(parameter),colnames(data))) == 0) {
+        return ("Parameter not found in dataset")
+    }
+    if (colnames(data)[1] != "Time") {
+        return ("First column is not Time column - wrong data?")
+    }
+    typical_param <- select(data, 1, grep(paste(parameter),
+                                          colnames(data)))
+    return (typical_param)
+}
