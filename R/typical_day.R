@@ -3,7 +3,7 @@
 #' This function calculates the typical parameters in a dataframe for one
 #' circadian cycle. Use this function on a dataframe generated from a DSI export
 #'  using the DSI_export_to_dataframe function.
-#' @describeIn typical_day
+#' @describeIn typical_day Calculate typical day from telemetry data.
 #' @param data A dataframe created using the DSI_export_to_dataframe function.
 #' @param lights_on Time when the lights turn on. (24H)
 #' @param avg_mintes Number of minutes to average over (integer)
@@ -15,21 +15,37 @@
 
 typical_day <- function(data, lights_on) {
 
+    df_check <- is.data.frame(data)
+    if (!df_check) return("'data' must be dataframe.")
+
+    df_classes <- sapply(data, class)
+    ITime_check <- sum(df_classes == "ITime")
+    if (ITime_check == 0) {
+        df_is_posixt <- sapply(data, is.POSIXct)
+        if (sum(sapply(data, is.POSIXct)) == 0)
+            {return("Must contain a column of ITime or POSIXct")
+        }
+        colnames(data)[which(df_is_posixt)] <- "Time"
+        data$TimesOnly <- as.ITime(data$Time)
+    }
+
+    lights_on_check <- missing(lights_on)
+    if (lights_on_check) {
+        lights_on <- 6
+        print("'lights_on' not provided. Setting to default 6")
+    }
 #Create 24-hour averages for baseline and hypertensive data for comparisons
 t_begin <- data$TimesOnly[1]
 t_next <- data$TimesOnly[2]
 t_delta <- t_next-t_begin
 total_times <- as.numeric(86400 / t_delta)
 
-# initialize blank typical day for filling in
-
-
 # initialize list of typical days for filling in
 typical_list <- list()
 
 # loops over SNs
-SN_iterator <- 1
-while (SN_iterator <= length(data$.id %>% unique())) {
+for (SN_iterator in 1:length(data$.id %>% unique())) {
+    progress(SN_iterator, length(data$.id %>% unique()))
     # loops over times
     times_iterator <- 1
 
@@ -92,7 +108,8 @@ while (lights_iterator < length(all_typical$Time)) {
     }
     if (as.numeric(all_typical$Time[lights_iterator] -
                    all_typical$Time[lights_iterator-1])<0){
-        LightsNext <- as.numeric(all_typical$Time[lights_iterator]-all_typical$Time[lights_iterator-1])+86400
+        LightsNext <- as.numeric(all_typical$Time[lights_iterator] -
+                                     all_typical$Time[lights_iterator-1])+86400
     }
     if (lights_initial+LightsNext==86400){lights_initial<-lights_initial-86400}
     all_typical$LightsTime[lights_iterator]<-lights_initial+LightsNext
@@ -118,11 +135,10 @@ return (all_typical)
 # Arbitrary average of typical_day data
 typical_average <- function(data, avg_minutes) {
 
-    rows_avg_iterator <- 1
     seconds_per_row <- data$LightsTime[2] - data$LightsTime[1]
     rows_per_hour <- 60*avg_minutes / seconds_per_row
     data <- data %>% select(-LightsOn)
-    while (rows_avg_iterator<=nrow(data)/rows_per_hour) {
+    for (rows_avg_iterator in 1:nrow(data)/rows_per_hour) {
         data[rows_avg_iterator,] <- data %>%
             slice((rows_avg_iterator*rows_per_hour-(rows_per_hour-1)):
                       (rows_avg_iterator*rows_per_hour)) %>%
