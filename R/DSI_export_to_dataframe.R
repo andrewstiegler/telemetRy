@@ -21,12 +21,12 @@
 DSI_export_to_dataframe <- function (selected_file) {
     filetype_check <- readxl::excel_format(selected_file)
     if (is.na(filetype_check)) {
-        return("Must select Excel file")
+        stop("Must select Excel file")
     }
 
     sheet_list <- excel_sheets(selected_file)
     if (sum(grepl("Parameters", sheet_list)) == 0) {
-        return("No 'Parameters' sheets. Can't import this file.")
+        stop("No 'Parameters' sheets. Can't import this file.")
     }
 
     SN_list <- 1

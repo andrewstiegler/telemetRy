@@ -19,7 +19,7 @@
 circadian_avg <- function (data, lights_on) {
     # Check inputs
     df_check <- is.data.frame(data)
-    if (!df_check) return("'data' must be dataframe.")
+    if (!df_check) stop("'data' must be dataframe.")
     lights_on_check <- missing(lights_on)
     if (lights_on_check) {
         lights_on <- 6

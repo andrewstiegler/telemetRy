@@ -2,27 +2,12 @@
 % Please edit documentation in R/injection_time_functions.R
 \name{add_injtime}
 \alias{add_injtime}
-\alias{post_inj_sbp}
-\alias{post_inj_dbp}
-\alias{post_inj_map}
-\alias{post_inj_temp}
-\alias{post_inj_HR}
-\alias{post_inj_activity}
+\alias{isolate_postinj}
 \title{Add a column for time since injection / break in dataset.}
 \usage{
 add_injtime(data, injection_time)
 
-post_inj_sbp(data)
-
-post_inj_dbp(data)
-
-post_inj_map(data)
-
-post_inj_temp(data)
-
-post_inj_HR(data)
-
-post_inj_activity(data)
+isolate_postinj(data, parameter)
 }
 \arguments{
 \item{data}{A dataframe created using the DSI_export_to_dataframe function.}
@@ -43,22 +28,11 @@ DSI_export_to_dataframe function.
 \itemize{
 \item \code{add_injtime}: Add injection time column to dataset.
 
-\item \code{post_inj_sbp}: Isolate SBP from dataset after adding injection time.
-
-\item \code{post_inj_dbp}: Isolate DBP from dataset after adding injection time.
-
-\item \code{post_inj_map}: Isolate MAP from dataset after adding injection time.
-
-\item \code{post_inj_temp}: Isolate temperature from dataset after adding
-injection time.
-
-\item \code{post_inj_HR}: Isolate HR from dataset after adding injection time.
-
-\item \code{post_inj_activity}: Isolate activity from dataset after adding injection
+\item \code{isolate_postinj}: Isolate parameter from dataset after adding injection
 time.
 }}
 
 \examples{
 add_injtime(data = data, lights_on = 21)
-post_inj_sbp(data = add_injtime_output)
+isolate_postinj(data = add_injtime_output, parameter = "SBP")
 }

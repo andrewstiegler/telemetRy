@@ -18,12 +18,12 @@
 generate_SN_list <- function(selected_file) {
     filetype_check <- readxl::excel_format(selected_file)
     if (filetype_check != "xlsx") {
-        return("Must select Excel file")
+        stop("Must select Excel file")
     }
 
     sheet_list <- excel_sheets(selected_file)
     if (!"Parameters" %in% sheet_list) {
-        return("No 'Parameters' sheets. Can't import this file.")
+        stop("No 'Parameters' sheets. Can't import this file.")
     }
 
     SN_list <- 1

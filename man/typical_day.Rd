@@ -26,6 +26,8 @@ circadian cycle. Use this function on a dataframe generated from a DSI export
 }
 \section{Functions}{
 \itemize{
+\item \code{typical_day}: Calculate typical day from telemetry data.
+
 \item \code{typical_average}: Average typical_day over specified time interval.
 }}
 

@@ -16,10 +16,10 @@ isolate_typical <- function (data, parameter) {
     param_missing <- missing(parameter)
     if (param_missing) return ("No parameter - please set parameter to isolate")
     if (sum(grep(paste(parameter),colnames(data))) == 0) {
-        return ("Parameter not found in dataset")
+        stop ("Parameter not found in dataset")
     }
     if (colnames(data)[1] != "Time") {
-        return ("First column is not Time column - wrong data?")
+        stop ("First column is not Time column - wrong data?")
     }
     typical_param <- select(data, 1, grep(paste(parameter),
                                           colnames(data)))
