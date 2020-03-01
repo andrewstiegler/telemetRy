@@ -1,7 +1,7 @@
-telemetRy: for interacting with DSI telemetry data in R
+telemetRy: for interacting with telemetry data in R
 ================
 Andrew Stiegler
-2/28/2020
+3/1/2020
 
 ## Description
 
@@ -32,13 +32,25 @@ devtools::install_github(repo = 'andrewstiegler/telemetRy')
 library(telemetRy)
 ```
 
+## Calculating typical days from time series data
+
+The typical\_day function can be applied to dataframes with a time
+column to calculate the value of parameters over a single circadian
+cylcle. The dataframe must have a column with times and the user must
+specifythe beginning of the circadian cycle.
+
+``` r
+# For example, room lights turn on at 6AM
+typical_day_output <- typical_day(data = time_series_data, lights_on = 6)
+```
+
 ## Importing DSI data
 
 First data must be exported from DSI’s Ponemah software.
 
-With an experiment open, navigate to Experiment \> Export Data. In this
-pop-up, select subjects to export, a timerange to export, and make sure
-to un-check “Pivot Compatible Sheets”
+To export data: with an experiment open, navigate to Experiment \>
+Export Data. In this pop-up, select subjects to export, a timerange to
+export, and make sure to un-check “Pivot Compatible Sheets”
 
 ![Screenshot of DSI Ponemah export
 screen](images/ponemah_export_pivot.png)
@@ -73,21 +85,19 @@ are generated, including a column for time-of-day only, and elapsed time
 since acquisition started in several units. The rest of the telemetry
 parameters are named.
 
-## Calculating typical day from DSI export
-
-After importing into R, pass the imported dataframe to the typical\_day
-function, and specify the beginning of the light cycle (in 24H).
-
-``` r
-# For example, room lights turn on at 6AM
-typical_day_output <- typical_day(data = exported_data, lights_on = 6)
-```
-
 ## Other useful functions
 
-Several functions are available for isolating BP parameters from
-datasets. Separate functions exist for the entire dataset or for
-typical\_day averages.
+Several functions are available for isolating parameters from datasets.
+Separate functions exist for the entire dataset or for typical\_day
+averages.
+
+``` r
+# To isolate SBP from a typical_day
+isolated_typical_SBP <- isolate_typical(data = typical_day_output, 
+                                              parameter = "SBP")
+```
+
+To isolate SBP from an entire DSI dataset:
 
 ``` r
 # For example, to isolate SBP from entire dataset
@@ -128,8 +138,3 @@ export_data_sbp
     ## 8   117.7039  111.7958  110.3915 114.7956           70
     ## 9   118.4992  112.3842  107.4810 113.6499           80
     ## 10  122.1034  113.1061  110.0623 115.7222           90
-
-``` r
-# To isolate SBP from a typical_day
-typical_day_sbp <- typical_sbp(data = typical_day_output)
-```
