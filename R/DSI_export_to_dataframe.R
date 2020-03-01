@@ -16,8 +16,19 @@
 # Excel file as input
 # Returns a dataframe with columns:
 # .id (telemeter SN), Time, ElapsedTime (various units), BP parameters
+
+
 DSI_export_to_dataframe <- function (selected_file) {
+    filetype_check <- readxl::excel_format(selected_file)
+    if (is.na(filetype_check)) {
+        return("Must select Excel file")
+    }
+
     sheet_list <- excel_sheets(selected_file)
+    if (sum(grepl("Parameters", sheet_list)) == 0) {
+        return("No 'Parameters' sheets. Can't import this file.")
+    }
+
     SN_list <- 1
     SN_first_loop <- 1
     for (sheet_loop_iterator in 1:length(sheet_list)){
@@ -36,7 +47,7 @@ DSI_export_to_dataframe <- function (selected_file) {
 
     import_data_list <- list()
     for (SN_iterator in 1:length(SN_list)) {
-        progress(SN_iterator*(100/length(SN_list)))
+        progress(SN_iterator, length(SN_list))
         #Import the first sheet of the file by matching SN
         imported_sheet <- read_excel(
             selected_file,
