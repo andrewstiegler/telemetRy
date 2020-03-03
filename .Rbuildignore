@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^images$
+^testdata$
+^README\.Rmd$
+^doc$
+^Meta$
