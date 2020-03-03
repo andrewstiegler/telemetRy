@@ -4,16 +4,29 @@ Title: Functions for Importing and Manipulating DSI Telemetry Data
 Version: 0.1.0
 Author: Andrew Stiegler
 Maintainer: Andrew Stiegler <andrew.stiegler@gmail.com>
-Description: To be finished
-License: What license is it under?
+Description: This is a package for interacting with telemetry data using R. 
+    Functions for analyzing telemetry data over various timescales are provided. 
+    A function for importing data from DSI telemetry systems is also included.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Suggests: 
+    knitr, 
+    rmarkdown,
+    ggplot2
+VignetteBuilder: knitr
+Depends: R(>= 2.10)
 Imports:
-    tidyverse,
+    dplyr,
+    magrittr,
+    purrr,
     readxl,
+    lubridate,
     janitor,
     data.table,
     Rfast,
     matrixStats,
-    svMisc
+    svMisc,
+    rlang,
+    tidyr
 RoxygenNote: 7.0.2
