@@ -1,7 +1,5 @@
 telemetRy: for interacting with telemetry data in R
 ================
-Andrew Stiegler
-3/1/2020
 
 ## Description
 
@@ -74,4 +72,5 @@ sample_lights_on <- circadian_avg(data = sample_BP_data, lights_on = 6)[[2]]
 ```
 
 To see an example of using this package with your own DSI data, check
-out the vignette [Importing DSI data](doc/DSI_import.html)
+out the vignette [Importing DSI
+data](https://andrewstiegler.github.io/telemetRy/DSI_import.html)
