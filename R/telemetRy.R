@@ -25,14 +25,21 @@
 #' @import readxl
 #' @import dplyr
 #' @import magrittr
+#' @importFrom tidyr spread
 #' @importFrom data.table as.ITime
 #' @importFrom data.table rbindlist
 #' @importFrom svMisc progress
 #' @importFrom janitor excel_numeric_to_date
 #' @importFrom purrr reduce
 #' @importFrom lubridate is.POSIXct
+#' @importFrom rlang .data
+#' @importFrom rlang quo_get_expr
+#' @importFrom utils head
+#' @importFrom utils stack
+#' @importFrom utils tail
 #'
 #' @export DSI_export_to_dataframe
+#' @export isolate_parameter
 #' @export typical_day
 #' @export typical_average
 #' @export isolate_typical

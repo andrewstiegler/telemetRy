@@ -13,6 +13,8 @@ isolate_postinj(data, parameter)
 \item{data}{A dataframe created using the DSI_export_to_dataframe function.}
 
 \item{injection_time}{Time before but close to the injection (24H)}
+
+\item{parameter}{Name of a parameter in the dataset, in quotes.}
 }
 \value{
 A dataframe containing a column for time since injection / break and
@@ -32,7 +34,3 @@ DSI_export_to_dataframe function.
 time.
 }}
 
-\examples{
-add_injtime(data = data, lights_on = 21)
-isolate_postinj(data = add_injtime_output, parameter = "SBP")
-}

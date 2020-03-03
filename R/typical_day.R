@@ -6,19 +6,23 @@
 #' @describeIn typical_day Calculate typical day from telemetry data.
 #' @param data A dataframe created using the DSI_export_to_dataframe function.
 #' @param lights_on Time when the lights turn on. (24H)
-#' @param avg_mintes Number of minutes to average over (integer)
+#' @param progressbar Boolean for whether to show progress of calculation.
+#' @param avg_minutes Number of minutes to average over (integer)
 #' @return A dataframe containing a column of circadian time and parameters.
 #' @examples
-#' typical_day(data = data, lights_on = 21)
-#' typical_day(data = data, lights_on = 6)
-#' typical_average(data = data, avg_minutes = 20)
+#' typical_day(data = sample_BP_data, lights_on = 21)
+#' typical_day(data = sample_BP_data, lights_on = 6)
+#' @import dplyr
+#' @import magrittr
+#' @importFrom data.table as.ITime
 
-typical_day <- function(data, lights_on) {
+typical_day <- function(data, lights_on, progressbar = FALSE) {
 
     df_check <- is.data.frame(data)
     if (!df_check) return("'data' must be dataframe.")
 
     df_classes <- sapply(data, class)
+
     ITime_check <- sum(df_classes == "ITime")
     if (ITime_check == 0) {
         df_is_posixt <- sapply(data, is.POSIXct)
@@ -26,7 +30,7 @@ typical_day <- function(data, lights_on) {
             {return("Must contain a column of ITime or POSIXct")
         }
         colnames(data)[which(df_is_posixt)] <- "Time"
-        data$TimesOnly <- as.ITime(data$Time)
+        data$TimesOnly <- data.table::as.ITime(data$Time)
     }
 
     lights_on_check <- missing(lights_on)
@@ -45,11 +49,13 @@ typical_list <- list()
 
 # loops over SNs
 for (SN_iterator in 1:length(data$.id %>% unique())) {
-    progress(SN_iterator, length(data$.id %>% unique()))
+    if(progressbar) {
+    progress(SN_iterator, length(data$.id %>% unique()))}
     # loops over times
     times_iterator <- 1
 
-    single_SN_data <- filter(data, .id == (data$.id %>% unique())[SN_iterator])
+    single_SN_data <- filter(data, .data$.id ==
+                                 (data$.id %>% unique())[SN_iterator])
 
     typical_day <- tibble(Time = seq(from = t_begin, to = (t_begin+86390),
                                      by = t_delta),
@@ -61,9 +67,10 @@ for (SN_iterator in 1:length(data$.id %>% unique())) {
     time_column <- typical_day$Time
 
     while (times_iterator <= total_times) {
-        single_SN_single_time <- filter(single_SN_data, TimesOnly ==
+        single_SN_single_time <- filter(single_SN_data, .data$TimesOnly ==
                                             time_column[times_iterator]) %>%
-            select( -.id, -Time, -TimesOnly) %>% colMeans(na.rm = TRUE)
+            select( -.data$.id, -.data$Time, -.data$TimesOnly) %>%
+            colMeans(na.rm = TRUE)
         typical_day$SBP[times_iterator] <- single_SN_single_time[5]
         typical_day$DBP[times_iterator] <- single_SN_single_time[6]
         typical_day$MAP[times_iterator] <- single_SN_single_time[7]
@@ -97,7 +104,7 @@ all_typical <- typical_list %>% reduce(left_join, by = "Time")
 
 # Add columns for status of room lights ----
 lights_iterator <- 2
-lights_initial <- as.numeric(as.ITime(lights_on*3600) - all_typical$Time[1])
+lights_initial <- as.numeric(data.table::as.ITime(lights_on*3600) - all_typical$Time[1])
 if (lights_initial<0) {lights_initial <- lights_initial*-1}
 all_typical$LightsTime <- lights_initial
 while (lights_iterator < length(all_typical$Time)) {
@@ -120,6 +127,7 @@ all_typical$LightsTime[length(all_typical$Time)] <-
     lights_initial+as.numeric(all_typical$Time[length(all_typical$Time)]
                               -all_typical$Time[length(all_typical$Time)-1])
 
+all_typical$LightsOn <- 0
 all_typical <- all_typical %>% mutate(
     LightsOn = case_when(
         LightsTime < 43200 ~ "Y",
@@ -137,7 +145,7 @@ typical_average <- function(data, avg_minutes) {
 
     seconds_per_row <- data$LightsTime[2] - data$LightsTime[1]
     rows_per_hour <- 60*avg_minutes / seconds_per_row
-    data <- data %>% select(-LightsOn)
+    data <- data %>% select(-.data$LightsOn)
     for (rows_avg_iterator in 1:nrow(data)/rows_per_hour) {
         data[rows_avg_iterator,] <- data %>%
             slice((rows_avg_iterator*rows_per_hour-(rows_per_hour-1)):
@@ -145,12 +153,13 @@ typical_average <- function(data, avg_minutes) {
             colMeans(na.rm=TRUE) %>%
             stack() %>%
             as_tibble() %>%
-            spread(key=ind, value=values)
+            spread(key=.data$ind, value=.data$values)
         rows_avg_iterator <- rows_avg_iterator+1
     }
 
     data <- head(data,nrow(data)/rows_per_hour)
 
+    data$LightsOn <- 0
     data <- data %>% mutate(
         LightsOn = case_when(
             LightsTime < 43200 ~ "Y",

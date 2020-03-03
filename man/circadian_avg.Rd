@@ -18,9 +18,9 @@ is "Dark Averages" when room lights are OFF, the second list element is
 "Light Averages" when room lights are ON.
 }
 \description{
-Theis function takes the output of DSI_export_to_dataframe and calculates
+This function takes the output of DSI_export_to_dataframe and calculates
 average telemetry parameters during the entire dark or light cycle.
 }
 \examples{
-circadian_avg(data = data, lights_on = 6)
+circadian_avg(data = sample_BP_data, lights_on = 6)
 }

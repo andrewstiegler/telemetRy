@@ -5,8 +5,6 @@
 #'
 #' @param selected_file Path to an Excel file created by Ponemah.
 #' @return A character vector containing all serial numbers in the Ponemah export.
-#' @examples
-#' generate_SN_list(selected_file)
 
 # generate_SN_list function takes filepath of DSI exported Excel file as input
 # Returns list of telemeter SNs as vector

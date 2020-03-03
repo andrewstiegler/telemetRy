@@ -16,6 +16,3 @@ A character vector containing all serial numbers in the Ponemah export.
 This function takes the path to an Excel file as input and generates a vector
 containing all serial numbers found in the Excel file.
 }
-\examples{
-generate_SN_list(selected_file)
-}

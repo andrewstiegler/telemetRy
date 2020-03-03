@@ -20,6 +20,3 @@ This function calculates the minimum value of telemetry parameters after
 an injection. The input for this function is the output of the post_inj
 functions, i.e. post_inj_sbp.
 }
-\examples{
-post_inj_min(data = post_inj_sbp_output, duration = 6)
-}

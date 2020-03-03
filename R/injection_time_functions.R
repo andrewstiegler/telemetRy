@@ -6,12 +6,10 @@
 #' @describeIn add_injtime Add injection time column to dataset.
 #' @param data A dataframe created using the DSI_export_to_dataframe function.
 #' @param injection_time Time before but close to the injection (24H)
+#' @param parameter Name of a parameter in the dataset, in quotes.
 #' @return A dataframe containing a column for time since injection / break and
 #' columns for each parameter, which each subject synchronized to their
 #' injection time.
-#' @examples
-#' add_injtime(data = data, lights_on = 21)
-#' isolate_postinj(data = add_injtime_output, parameter = "SBP")
 
 # faster implementation of adding injection time
 add_injtime <- function (data, injection_time) {
@@ -31,23 +29,28 @@ add_injtime <- function (data, injection_time) {
   df_check <- is.data.frame(data)
   if (!df_check) stop("'data' must be dataframe.")
 
-
-
   injection_time<-as.ITime(3600*injection_time)
 
-  t_begin<-data$TimesOnly[1]
-  t_next<-data$TimesOnly[2]
+  if ("TimesOnly" %in% colnames(data)) {
+  t_begin <- (data %>% select(.data$TimesOnly))[1,1]
+  t_next <- (data %>% select(.data$TimesOnly))[2,1]
+  } else stop("No TimesOnly column - wrong dataframe as input")
+
   t_delta<-t_next-t_begin
+
   if (max(data$ElapsedTime < 86400)) {time_multiplier <- 3600
   } else {time_multiplier <- 86400}
+
   total_times<-time_multiplier*as.numeric(max(data$Time)-min(data$Time))
   single_SN_data_list<-list()
   single_SN_data_length_list<-list()
   injection_times<-list()
 
   for (typical_iterator in 1:unique(data$.id)%>%length()){
-    single_SN_data<-filter(data, .id == unique(data$.id)[typical_iterator])
-    single_SN_data_postinj <- filter(single_SN_data, TimesOnly > injection_time)
+    single_SN_data<-filter(data, .data$.id ==
+                             unique(data$.id)[typical_iterator])
+    single_SN_data_postinj <- filter(single_SN_data, .data$TimesOnly >
+                                       injection_time)
     first_NA <- as.numeric(which(is.na(single_SN_data_postinj$SBP)))[1]
     if (is.na(first_NA)){
       stop("No break in the data to base injection time")

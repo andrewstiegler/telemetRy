@@ -20,6 +20,3 @@ dataframe containing the time, several measures of elapsed time since the
 start of the recording, and all telemetry parameters (SBP, DBP, MAP,
 HR, Temperature, Activity)
 }
-\examples{
-DSI_export_to_dataframe(selected_file)
-}

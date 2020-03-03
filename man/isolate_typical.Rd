@@ -9,16 +9,18 @@ isolate_typical(data, parameter)
 \arguments{
 \item{data}{A dataframe which is the output from typical_day.}
 
-\item{parameter}{Name of a parameter in the dataset, in quotes.}
+\item{parameter}{Name of a parameter in the dataset.}
 }
 \value{
 A dataframe with the Time columns from the input,
 and a column for each subject appended with the parameter (i.e. SBP).
- @examples
-isolate_typical(data = typical_day_output, parameter = "SBP")
-isolate_typical(data = typical_day_output, parameter = "HR")
 }
 \description{
 Theis function takes the output of typical_day and outputs a new
 dataframe for the specified parameter.
+}
+\examples{
+typical_day_output <- typical_day(sample_BP_data, lights_on = 6)
+isolate_typical(data = typical_day_output, parameter = SBP)
+isolate_typical(data = typical_day_output, parameter = HR)
 }

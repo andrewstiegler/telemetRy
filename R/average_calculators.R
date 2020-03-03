@@ -12,13 +12,14 @@ hourly_average <- function(avg_data_tibble) {
             colMeans(na.rm=TRUE) %>%
             stack() %>%
             as_tibble() %>%
-            spread(key=ind, value=values)
+            spread(key=.data$ind, value=.data$values)
         rows_avg_iterator <- rows_avg_iterator+1
     }
 
     avg_data_tibble_notime <- head(avg_data_tibble_notime,nrow(avg_data_tibble_notime)/rows_per_hour)
     avg_data_tibble_notime$Time <- avg_data_tibble$Time[1] + avg_data_tibble_notime$elapsed_time
-    avg_data_tibble_notime <- avg_data_tibble_notime %>% select(Time, elapsed_time, everything())
+    avg_data_tibble_notime <- avg_data_tibble_notime %>%
+        select(.data$Time, .data$elapsed_time, everything())
     return(avg_data_tibble_notime) }
 
 # arb_average function averages post-inj parameter isolated data
@@ -35,7 +36,7 @@ arb_average <- function(data, avg_minutes) {
             colMeans(na.rm=TRUE) %>%
             stack() %>%
             as_tibble() %>%
-            spread(key=ind, value=values)
+            spread(key=.data$ind, value=.data$values)
         rows_avg_iterator <- rows_avg_iterator+1
     }
 

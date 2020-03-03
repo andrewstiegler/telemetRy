@@ -8,9 +8,6 @@
 #' @param duration Maximum time after injection to look for minimum (hours).
 #' @return A dataframe containing the minimum value  of the parameter for each
 #' SN.
-#' @examples
-#' post_inj_min(data = post_inj_sbp_output, duration = 6)
-
 # i.e. output of post_inj_sbp
 # caclulates minimum 5-minute average after injection (200s to 6 hrs post-inj)
 #' @import dplyr
@@ -20,7 +17,8 @@
 
 post_inj_min <- function (data, duration) {
 
-    SNs <- colnames(select(data,-mean,-se,-InjTime,-InjTimeH))
+    SNs <- colnames(select(data, -.data$mean, -.data$se, -.data$InjTime,
+                           -.data$InjTimeH))
     # Data sets are 10 s/row, so to average over 5 min
     rows_to_avg_num <- 30
 
@@ -28,20 +26,21 @@ post_inj_min <- function (data, duration) {
     hours_post <- duration
     second_offset <- 200
     data_for_min_data_trim <- data %>%
-        filter(InjTime > second_offset & InjTime <= 3600*hours_post) %>%
-        select(-mean,-se,-InjTime,-InjTimeH)
+        filter(.data$InjTime > second_offset &
+                   .data$InjTime <= 3600*hours_post) %>%
+        select(-.data$mean, -.data$se, -.data$InjTime, -.data$InjTimeH)
 
     avg_data_to_use_data <- data_for_min_data_trim
     rows_avg_iterator <- 1
     avg_data_tibble <- avg_data_to_use_data
-    while (rows_avg_iterator<=nrow(avg_data_to_use_data)/rows_to_avg_num) {
+    while (rows_avg_iterator <= nrow(avg_data_to_use_data) / rows_to_avg_num) {
         avg_data_tibble[rows_avg_iterator,] <- avg_data_to_use_data %>%
-            slice((rows_avg_iterator*rows_to_avg_num-(rows_to_avg_num-1)):
+            slice((rows_avg_iterator*rows_to_avg_num - (rows_to_avg_num-1)):
                       (rows_avg_iterator*rows_to_avg_num)) %>%
             colMeans(na.rm=TRUE) %>%
             stack() %>%
             as_tibble() %>%
-            spread(key=ind,value=values)
+            spread(key=.data$ind,value=.data$values)
 
         rows_avg_iterator <- rows_avg_iterator + 1
     }
@@ -55,8 +54,5 @@ post_inj_min <- function (data, duration) {
 
     min_tibble <- tibble(SNs = SNs, min = min_delta_values)
     min_tibble <- spread(min_tibble, SNs, min)
-    return (min_tibble) }
-
-
-
-
+    return (min_tibble)
+}

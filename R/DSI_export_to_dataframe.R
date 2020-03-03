@@ -8,9 +8,6 @@
 #' @return A dataframe with 13 columns: .id (SN), Time, TimesOnly, ElapsedTime,
 #' ElapsedTimeMin, ElapsedTimeH, ElapsedTimeD, SBP, DBP, MAP, HR, Temp,
 #' Activity)
-#' @examples
-#' DSI_export_to_dataframe(selected_file)
-
 
 # DSI_export_to_dataframe function takes same input filepath of DSI exported
 # Excel file as input
@@ -58,8 +55,9 @@ DSI_export_to_dataframe <- function (selected_file) {
             # Select only the columns that we care about for analysis,
             # excluding duplicates and battery life etc
             select(-2, -3, -4, -5, -6, -7, -8, -14, -15, -17, -18) %>%
-            rename(Time = `1`, SBP = `9`, DBP = `10`, MAP = `11`, HR = `12`,
-                   Temp = `13`, Activity = `16`) %>%
+            rename(Time = .data$`1`, SBP = .data$`9`, DBP = .data$`10`,
+                   MAP = .data$`11`, HR = .data$`12`,
+                   Temp = .data$`13`, Activity = .data$`16`) %>%
             tail(-3)
         #Fix time from excel import
         imported_sheet$Time <-
@@ -88,9 +86,11 @@ DSI_export_to_dataframe <- function (selected_file) {
         #Convert elapsed time into only times for calculating lights on/off
         imported_sheet$TimesOnly <- as.ITime(imported_sheet$Time)
         #Rearrange columns for ease of reading
-        imported_sheet <- select(imported_sheet,Time,TimesOnly,ElapsedTime,
-                                 ElapsedTimeMin,ElapsedTimeH,ElapsedTimeD,
-                                 SBP,DBP,MAP,HR,Temp,Activity)
+        imported_sheet <- select(imported_sheet, .data$Time, .data$TimesOnly,
+                                 .data$ElapsedTime, .data$ElapsedTimeMin,
+                                 .data$ElapsedTimeH, .data$ElapsedTimeD,
+                                 .data$SBP, .data$DBP, .data$MAP, .data$HR,
+                                 .data$Temp, .data$Activity)
         #Fix character vectors back into numeric
         imported_sheet$SBP <- as.numeric(imported_sheet$SBP)
         imported_sheet$DBP <- as.numeric(imported_sheet$DBP)

@@ -1,7 +1,7 @@
 #' Calculate average parameters during light or dark cycle.
 #'
 #' @description
-#' Theis function takes the output of DSI_export_to_dataframe and calculates
+#' This function takes the output of DSI_export_to_dataframe and calculates
 #' average telemetry parameters during the entire dark or light cycle.
 #' @param data A dataframe which is the output from DSI_export_to_dataframe.
 #' @param lights_on Time when the lights turn on. (24H)
@@ -10,7 +10,7 @@
 #' is "Dark Averages" when room lights are OFF, the second list element is
 #' "Light Averages" when room lights are ON.
 #' @examples
-#' circadian_avg(data = data, lights_on = 6)
+#' circadian_avg(data = sample_BP_data, lights_on = 6)
 
 # calculate average parameters in dark or light conditions ####
 # circadian_avg function takes imported dataframe and lights_on time as input
@@ -26,8 +26,11 @@ circadian_avg <- function (data, lights_on) {
         print("'lights_on' not provided. Setting to default 6")
     }
 
-    data_length <- length(data$.id %>% unique())
-    SNs <- data$.id %>% unique()
+    if (sum(grepl(".id", colnames(data))) != 0) {
+        data_idcol <- (data %>% select(.data$.id) %>% unique())[[1]]
+    } else data_idcol <- 1
+    data_length <- length(data_idcol %>% unique())
+    SNs <- data_idcol
 
     lights_on <- 3600 * lights_on
     LightsOff <- 12 * 3600 + lights_on
@@ -39,6 +42,7 @@ circadian_avg <- function (data, lights_on) {
         Lights_zero <- "Off"
     } else (Lights_zero <- "On")
 
+    data$Lights <- NA
     if (Lights_zero == "On") {
         data <- data %>% mutate(
             Lights = case_when(
@@ -62,17 +66,18 @@ circadian_avg <- function (data, lights_on) {
     data_dark_list <- list()
     data_light_list <- list()
     for (data_iterator in 1:data_length) {
-        data_singleSN <- data %>% filter(.id == SNs[data_iterator])
-        data_days <- ceiling(data_singleSN$ElapsedTimeD %>% max())
-        data_dark <- filter(data_singleSN, Lights == "Off")
-        data_light <- filter(data_singleSN, Lights == "On")
+        data_singleSN <- data %>% filter(.data$.id == SNs[data_iterator])
+        data_days <- ceiling(select(data_singleSN, .data$ElapsedTimeD) %>%
+                                 max())
+        data_dark <- filter(data_singleSN, .data$Lights == "Off")
+        data_light <- filter(data_singleSN, .data$Lights == "On")
 
-        data_dark_avg <- tibble(ElapsedTimeD = c(1:data_days),
+        data_dark_avg <- tibble(Time = c(1:data_days),
                                 SBP = c(1:data_days), DBP = c(1:data_days),
                                 MAP = c(1:data_days), HR = c(1:data_days),
                                 Temp = c(1:data_days),
                                 Activity = c(1:data_days))
-        data_light_avg <- tibble(ElapsedTimeD = c(1:data_days),
+        data_light_avg <- tibble(Time = c(1:data_days),
                                  SBP = c(1:data_days), DBP = c(1:data_days),
                                  MAP = c(1:data_days), HR = c(1:data_days),
                                  Temp = c(1:data_days),
@@ -80,15 +85,15 @@ circadian_avg <- function (data, lights_on) {
 
         for (days_iterator in 1:data_days) {
             data_dark_avg[days_iterator,] <- data_dark %>%
-                select(-1:-6,-Lights) %>%
-                filter(ElapsedTimeD < days_iterator &
-                           ElapsedTimeD >= days_iterator - 1) %>%
+                select(-1:-6,-.data$Lights) %>%
+                filter(.data$ElapsedTimeD < days_iterator &
+                           .data$ElapsedTimeD >= days_iterator - 1) %>%
                 colMeans(na.rm=TRUE)
 
             data_light_avg[days_iterator,] <- data_light %>%
-                select(-1:-6,-Lights) %>%
-                filter(ElapsedTimeD < days_iterator &
-                           ElapsedTimeD >= days_iterator - 1) %>%
+                select(-1:-6,-.data$Lights) %>%
+                filter(.data$ElapsedTimeD < days_iterator &
+                           .data$ElapsedTimeD >= days_iterator - 1) %>%
                 colMeans(na.rm=TRUE)
 
             if (days_iterator == data_days) {
@@ -99,7 +104,7 @@ circadian_avg <- function (data, lights_on) {
                       paste(SNs[data_iterator],"Temp",sep=""),
                       paste(SNs[data_iterator],"HR",sep=""),
                       paste(SNs[data_iterator],"Activity",sep=""))
-                data_dark_avg$ElapsedTimeD <- c(1:data_days)
+                data_dark_avg$Time <- c(1:data_days)
 
                 colnames(data_light_avg)[2:7] <-
                     c(paste(SNs[data_iterator],"SBP",sep=""),
@@ -109,7 +114,7 @@ circadian_avg <- function (data, lights_on) {
                       paste(SNs[data_iterator],"HR",sep=""),
                       paste(SNs[data_iterator],
                             "Activity",sep=""))
-                data_light_avg$ElapsedTimeD <- c(1:data_days)
+                data_light_avg$Time <- c(1:data_days)
                 data_dark_list[[data_iterator]] <- data_dark_avg
                 data_light_list[[data_iterator]] <- data_light_avg
             }
@@ -118,8 +123,8 @@ circadian_avg <- function (data, lights_on) {
         data_iterator <- data_iterator + 1
     }
 
-    data_dark_all <- data_dark_list %>% reduce(left_join, by="ElapsedTimeD")
-    data_light_all <- data_light_list %>% reduce(left_join, by="ElapsedTimeD")
+    data_dark_all <- data_dark_list %>% reduce(left_join, by="Time")
+    data_light_all <- data_light_list %>% reduce(left_join, by="Time")
 
     circadian_list <- list(data_dark_all, data_light_all)
     names(circadian_list)[1:2] <- c("Dark Averages", "Light Averages")
