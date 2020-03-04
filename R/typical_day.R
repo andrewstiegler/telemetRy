@@ -139,6 +139,10 @@ typical_day <- function(data, lights_on) {
 # Arbitrary average of typical_day data
 typical_average <- function(data, avg_minutes) {
 
+    avg_minutes_missing <- missing(avg_minutes)
+    if (avg_minutes_missing) {
+        stop("avg_minutes not supplied. Enter number of minutes to average.")
+    }
     seconds_per_row <- data$LightsTime[2] - data$LightsTime[1]
     rows_per_avg <- 60*avg_minutes / seconds_per_row
     data <- data %>% select(-.data$LightsOn)
