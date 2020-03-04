@@ -5,7 +5,7 @@
 \alias{typical_average}
 \title{Calculate average parameters for each timepoint in a circadian cycle.}
 \usage{
-typical_day(data, lights_on, progressbar = TRUE)
+typical_day(data, lights_on)
 
 typical_average(data, avg_minutes)
 }
@@ -13,8 +13,6 @@ typical_average(data, avg_minutes)
 \item{data}{A dataframe created using the DSI_export_to_dataframe function.}
 
 \item{lights_on}{Time when the lights turn on. (24H)}
-
-\item{progressbar}{Boolean for whether to show progress of calculation.}
 
 \item{avg_minutes}{Number of minutes to average over (integer)}
 }

@@ -5,6 +5,9 @@
 #' start of the recording, and all telemetry parameters (SBP, DBP, MAP,
 #' HR, Temperature, Activity)
 #' @param selected_file Path to an Excel file created by Ponemah.
+#' @param output_format W by default. W for wide dataframes, one row per time
+#' point and one column per subject per parameter. L for long dataframes, one
+#' row per time point per subject and one column per parameter.
 #' @return A dataframe with 13 columns: .id (SN), Time, TimesOnly, ElapsedTime,
 #' ElapsedTimeMin, ElapsedTimeH, ElapsedTimeD, SBP, DBP, MAP, HR, Temp,
 #' Activity)
@@ -15,10 +18,16 @@
 # .id (telemeter SN), Time, ElapsedTime (various units), BP parameters
 
 
-DSI_export_to_dataframe <- function (selected_file) {
+DSI_export_to_dataframe <- function (selected_file, output_format = "W") {
     filetype_check <- readxl::excel_format(selected_file)
     if (is.na(filetype_check)) {
         stop("Must select Excel file")
+    }
+
+    output_format <- enquo(output_format)
+    if (!(!! quo_get_expr(output_format) == "W" |
+          !! quo_get_expr(output_format) == "L")) {
+        stop("output_format must be long (L) or wide (W)")
     }
 
     sheet_list <- excel_sheets(selected_file)
@@ -79,18 +88,14 @@ DSI_export_to_dataframe <- function (selected_file) {
                 as.numeric(imported_sheet$Time[1])
             elapsed_iterator <- elapsed_iterator+1
         }
-        #Convert elapsed time into other units for ease of plotting later
-        imported_sheet$ElapsedTimeMin <- imported_sheet$ElapsedTime/60
-        imported_sheet$ElapsedTimeH <- imported_sheet$ElapsedTime/3600
-        imported_sheet$ElapsedTimeD <- imported_sheet$ElapsedTime/86400
+
         #Convert elapsed time into only times for calculating lights on/off
         imported_sheet$TimesOnly <- as.ITime(imported_sheet$Time)
         #Rearrange columns for ease of reading
         imported_sheet <- select(imported_sheet, .data$Time, .data$TimesOnly,
-                                 .data$ElapsedTime, .data$ElapsedTimeMin,
-                                 .data$ElapsedTimeH, .data$ElapsedTimeD,
-                                 .data$SBP, .data$DBP, .data$MAP, .data$HR,
-                                 .data$Temp, .data$Activity)
+                                 .data$ElapsedTime, .data$SBP, .data$DBP,
+                                 .data$MAP, .data$HR, .data$Temp,
+                                 .data$Activity)
         #Fix character vectors back into numeric
         imported_sheet$SBP <- as.numeric(imported_sheet$SBP)
         imported_sheet$DBP <- as.numeric(imported_sheet$DBP)
@@ -108,7 +113,34 @@ DSI_export_to_dataframe <- function (selected_file) {
     }
 
     #Join all data into one table with a label column for SN
-    all_import_data <- rbindlist(import_data_list, idcol = TRUE)
+    all_import_data_long <- rbindlist(import_data_list, idcol = TRUE)
 
-    return (all_import_data)
+    import_data_list_wide <- list()
+    for (wide_iterator in 1:length(SN_list)){
+        import_data_list_wide[[wide_iterator]] <-
+            import_data_list[[wide_iterator]]
+        colnames(import_data_list_wide[[wide_iterator]]) <-
+            paste(SN_list[[wide_iterator]],
+                  colnames(import_data_list[[wide_iterator]]), sep = "_")
+        colnames(import_data_list_wide[[wide_iterator]])[1] <-
+            c("Time")
+        wide_iterator <- wide_iterator + 1
+    }
+
+    all_import_data_wide <- import_data_list_wide %>% reduce(left_join,
+                                                             by = "Time")
+    colnames(all_import_data_wide)[2:3] <- c("OnlyTime", "TimeElapsed")
+    all_import_data_wide <- all_import_data_wide %>%
+        select(-grep("TimesOnly", colnames(all_import_data_wide)),
+               -grep("ElapsedTime", colnames(all_import_data_wide)))
+    colnames(all_import_data_wide)[2:3] <- c("TimesOnly", "ElapsedTime")
+
+    if (!! quo_get_expr(output_format) == "W") {
+        return (all_import_data_wide)
+    }
+
+    if (!! quo_get_expr(output_format) == "L") {
+        return (all_import_data_long)
+    }
+
 }

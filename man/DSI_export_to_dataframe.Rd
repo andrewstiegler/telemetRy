@@ -4,10 +4,14 @@
 \alias{DSI_export_to_dataframe}
 \title{Import an Excel file created by DSI's Ponemah export function into R.}
 \usage{
-DSI_export_to_dataframe(selected_file)
+DSI_export_to_dataframe(selected_file, output_format = "W")
 }
 \arguments{
 \item{selected_file}{Path to an Excel file created by Ponemah.}
+
+\item{output_format}{W by default. W for wide dataframes, one row per time
+point and one column per subject per parameter. L for long dataframes, one
+row per time point per subject and one column per parameter.}
 }
 \value{
 A dataframe with 13 columns: .id (SN), Time, TimesOnly, ElapsedTime,
