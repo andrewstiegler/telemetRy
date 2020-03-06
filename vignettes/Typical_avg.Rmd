@@ -1,0 +1,174 @@
+---
+title: "Using typical_day on time series data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using typical_day on time series data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(telemetRy)
+library(lubridate)
+library(ggplot2)
+library(data.table)
+```
+
+## The typical_day function
+The function *typical_day* takes dataframe with a column 
+containing time data as input. For a given time of day, 
+*typical_days* calculates the average of all other columns in the 
+dataframe. This allows recovery of periodic signal even with large amounts of 
+noise in the data.
+
+## Example
+As an example, we'll first create a dataframe with a time column:
+```{r}
+df <- data.frame(Time = seq(from = now(), length.out = 200, by = "hours"))
+```
+Next, we'll create a column of periodic data, with a period of 1 day.
+```{r}
+# Setting the period to 2*pi/86400 works out to one day because as.duration measures in seconds
+df$periodic_data <- 5 * cos((2 * pi / 86400 * 
+                               as.numeric(as.duration(df$Time - df$Time[[1]])) + 3)) + 10
+```
+This periodic function repeats once per day. We'll create a new column for the 
+noisy data:
+```{r}
+set.seed(1234)
+df$periodic_data_noisy <- jitter(df$periodic_data, amount = 2)
+head(df)
+```
+
+Now let's plot the periodic data alone:
+```{r fig1, fig.width=5, fig.height=3, fig.align = 'center'}
+# Plot the periodic data and connect points to reveal periodicity
+ggplot()+
+    geom_point(data = df, aes(x = Time, y = periodic_data, color = "Periodic data"))+
+    geom_line(data = df, aes(x = Time, y = periodic_data, color = "Periodic curve"))+
+    xlab("Time")+
+    ylab("Data")+
+    scale_color_manual("", values = c("grey60","black"), guide = guide_legend(reverse = TRUE))+
+    theme_classic()
+```
+
+
+And then plot the noisy data overlaid with the periodic curve used to generate it:
+```{r fig2, fig.width=5, fig.height=3, fig.align = 'center'}
+ggplot()+
+    geom_point(data = df, aes(x = Time, y = periodic_data_noisy, color = "Noisy data"))+
+    geom_line(data = df, aes(x = Time, y = periodic_data, color = "Periodic curve"))+
+    xlab("Time")+
+    ylab("Data")+
+    scale_color_manual("", values = c("black", "grey60"))+
+    theme_classic()
+
+```
+
+## Using typical_day
+
+To calculate a typical day of this noisy periodic data:
+```{r}
+typical_df <- typical_day(data = df, lights_on = 0)
+head(typical_df)
+```
+
+Output from *typical_day* is a dataframe representing a typical 24-hour period 
+from that dataframe. We'll plot the output of *typical_day*:
+```{r fig3, fig.height = 3, fig.width = 5, fig.align = 'center'}
+ggplot()+
+    geom_line(data = typical_df, aes(x = Time/3600, y = periodic_data_noisy, 
+                                     color = "Typical noisy data"))+
+    xlab("Time (hours)")+
+    ylab("Data")+
+    scale_color_manual("", values = "blue")+
+    theme_classic()
+```
+
+## Comparison to non-linear regression model
+
+To determine the parameters of the initial periodic curve from the noisy data 
+alone, one approach would be to fit a sinusoidal curve to the data. We can try 
+using *nls* for this:
+
+```{r error=TRUE}
+# Try NLS fit with reasonable guesses for start
+nls_fit <- nls(periodic_data_noisy ~ coef1 * cos(coef2 * as.numeric(as.duration(df$Time - df$Time[[1]]))/86400 + coef3) + coef4, 
+               data = df, 
+               start = c(coef1 = max(df$periodic_data_noisy) - min(df$periodic_data_noisy), 
+                       coef2 = 1, coef3 = 2*pi, coef4 = mean(df$periodic_data_noisy)))
+
+print(coef(nls_fit), digits = 3)
+```
+
+Now we'll plot of the nls model fit:
+```{r fig4, fig.height = 3, fig.width = 5, fig.align = 'center'}
+nls_function <- function (x) {(coef(nls_fit)[1] * cos(coef(nls_fit)[2] * as.numeric(as.duration(x -  df$Time[1]))/86400 + coef(nls_fit)[3]) + coef(nls_fit)[4])
+                              }
+
+ggplot()+
+  stat_function(fun = nls_function, aes(color = "NLS prediction"))+
+  geom_point(data = df, aes(x = Time, y = periodic_data_noisy, color = "Noisy data"))+
+  xlab("Time")+
+  ylab("Data")+
+  scale_color_manual("", values=c("red", "black"))+
+  theme_classic()
+```
+In this case, *nls* finds a local minimum instead of the global minimum and 
+cannot fit the periodic trend.
+
+We can try using *nls* on our *typical_day* output instead:
+```{r}
+nls_typical_fit <- nls(periodic_data_noisy ~ coef1*cos(coef2*as.numeric(typical_df$Time - typical_df$Time[[1]])/86400 + coef3) + coef4, 
+               data = typical_df, 
+               start = c(coef1 = 1, coef2 = 1, coef3 = 1, coef4 = 1))
+
+print(coef(nls_typical_fit), digits = 3)
+```
+Note that we didn't need to set starting parameters, which are a common cause of 
+instability in *nls* models.
+
+
+We'll plot the result of running *nls* on the output of *typical_day*:
+```{r fig5, fig.height = 3, fig.width = 5, fig.align = 'center'}
+nls_typical_function <- function (x) {(coef(nls_typical_fit)[1] * cos(coef(nls_typical_fit)[2]*as.numeric(as.duration(x - df$Time[1]))/86400 
+                                                + coef(nls_typical_fit)[3]) +
+                                                  coef(nls_typical_fit)[4])
+                              }
+
+ggplot()+
+  stat_function(fun = nls_typical_function, aes(color = "NLS + typical_day"))+
+  geom_point(data = df, aes(x = Time, y = periodic_data_noisy, color = "Noisy data"))+
+  xlab("Time")+
+  ylab("Data")+
+  scale_color_manual("", values=c("blue", "black"))+
+  theme_classic()
+```
+
+And we'll finally compare the *nls* of *typical_day* to *nls* on the full data:
+```{r fig6, fig.height = 3, fig.width = 5, fig.align = 'center', echo=FALSE}
+ggplot()+
+    stat_function(fun = nls_function, aes(color = "NLS alone"))+
+    stat_function(fun = nls_typical_function, aes(color = "NLS + typical_day"))+
+    geom_point(data = df, aes(x = Time, y = periodic_data_noisy, color = "Noisy data"))+
+    xlab("Time")+
+    ylab("Data")+
+    scale_color_manual("", values=c("blue", "red", "black"))+
+    theme_classic()
+```
+
+Using *typical_day* in combination with *nls* reveals periodic data structure 
+that *nls* alone misses.
+
+We can also compare the curves alone:
+```{r fig7, fig.height = 3, fig.width = 5, fig.align = 'center', echo=FALSE}
+ggplot()+
+    stat_function(fun = nls_function, aes(color = "NLS alone"))+
+    stat_function(fun = nls_typical_function, aes(color = "NLS + typical_day"))+
+    geom_line(data = df, aes(x = Time, y = periodic_data, color = "Periodic curve"))+
+    xlab("Time")+
+    ylab("Data")+
+    scale_color_manual("", values=c("blue", "red", "black"))+
+    theme_classic()
+```
