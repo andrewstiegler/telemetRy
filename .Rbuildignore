@@ -3,5 +3,7 @@
 ^images$
 ^testdata$
 ^README\.Rmd$
+^README\.html$
+^docs$
 ^doc$
 ^Meta$
