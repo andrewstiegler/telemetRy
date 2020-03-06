@@ -5,7 +5,7 @@
 \alias{typical_average}
 \title{Calculate average parameters for each timepoint in a circadian cycle.}
 \usage{
-typical_day(data, lights_on)
+typical_day(data, lights_on, include_lights = FALSE)
 
 typical_average(data, avg_minutes)
 }
@@ -13,6 +13,10 @@ typical_average(data, avg_minutes)
 \item{data}{A dataframe created using the DSI_export_to_dataframe function.}
 
 \item{lights_on}{Time when the lights turn on. (24H)}
+
+\item{include_lights}{A boolean for including columns showing status of room
+lights. FALSE by default. If TRUE, output includes a column for light status
+("LightsOn") and a column for time since lights turned on ("LightsTime")}
 
 \item{avg_minutes}{Number of minutes to average over (integer)}
 }

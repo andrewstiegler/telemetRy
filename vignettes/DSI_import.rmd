@@ -44,7 +44,7 @@ A progress message will be displayed showing the current import status.
 The output of the file is a dataframe:
 ```{r}
 # Sample dataframe is included as sample_BP_data:
-head(sample_BP_data)
+head(sample_BP_data) %>% print(digits = 3)
 ```
 Where the .id column indicates the subject serial number, and the Time column 
 is the real time of data acquisition. Several useful time columns are generated, 
@@ -58,9 +58,8 @@ typical_day and circadian_avg both take the newly created dataframe as input.
 To calculate a typical day:
 ```{r eval=TRUE}
 # In our sample dataset, room lights turn on at 6AM
-sample_typical_day <- typical_day(data = sample_BP_data, lights_on = 6, 
-                                  progressbar = FALSE)
-head(sample_typical_day)
+sample_typical_day <- typical_day(data = sample_BP_data, lights_on = 6)
+head(sample_typical_day) %>% print(digits = 3)
 ```
 
 To calculate circadian averages:

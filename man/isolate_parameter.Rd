@@ -30,6 +30,7 @@ dataframe export.
 }}
 
 \examples{
-isolate_parameter(sample_BP_data, SBP, mean_col = TRUE)
-isolate_parameter(sample_BP_data, MAP)
+isolate_parameter(sample_BP_data, parameter = SBP)
+isolate_parameter(sample_BP_data, parameter = MAP, mean_col = TRUE)
+
 }

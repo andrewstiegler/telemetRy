@@ -2,6 +2,7 @@
 
 export(DSI_export_to_dataframe)
 export(add_injtime)
+export(arb_time_average)
 export(circadian_avg)
 export(generate_SN_list)
 export(isolate_parameter)

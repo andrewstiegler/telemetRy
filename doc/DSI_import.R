@@ -12,13 +12,12 @@ library(ggplot2)
 
 ## -----------------------------------------------------------------------------
 # Sample dataframe is included as sample_BP_data:
-head(sample_BP_data)
+head(sample_BP_data) %>% print(digits = 3)
 
 ## ----eval=TRUE----------------------------------------------------------------
 # In our sample dataset, room lights turn on at 6AM
-sample_typical_day <- typical_day(data = sample_BP_data, lights_on = 6, 
-                                  progressbar = FALSE)
-head(sample_typical_day)
+sample_typical_day <- typical_day(data = sample_BP_data, lights_on = 6)
+head(sample_typical_day) %>% print(digits = 3)
 
 ## ----eval=TRUE----------------------------------------------------------------
 # In our sample dataset, room lights turn on at 6AM
