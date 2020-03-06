@@ -39,11 +39,13 @@
 #' @importFrom utils tail
 #'
 #' @export DSI_export_to_dataframe
-#' @export isolate_parameter
+#' @export circadian_avg
 #' @export typical_day
 #' @export typical_average
 #' @export isolate_typical
+#' @export isolate_parameter
 #' @export add_injtime
 #' @export isolate_postinj
-#' @export circadian_avg
+#' @export arb_time_average
+
 NULL

@@ -6,6 +6,9 @@
 #' @describeIn typical_day Calculate typical day from telemetry data.
 #' @param data A dataframe created using the DSI_export_to_dataframe function.
 #' @param lights_on Time when the lights turn on. (24H)
+#' @param include_lights A boolean for including columns showing status of room
+#' lights. FALSE by default. If TRUE, output includes a column for light status
+#' ("LightsOn") and a column for time since lights turned on ("LightsTime")
 #' @param avg_minutes Number of minutes to average over (integer)
 #' @return A dataframe containing a column of circadian time and parameters.
 #' @examples
@@ -15,10 +18,10 @@
 #' @import magrittr
 #' @importFrom data.table as.ITime
 
-typical_day <- function(data, lights_on) {
+typical_day <- function(data, lights_on, include_lights = FALSE) {
 
     df_check <- is.data.frame(data)
-    if (!df_check) return("'data' must be dataframe.")
+    if (!df_check) stop("'data' must be dataframe.")
 
     idcol_check <- sum(grep(".id", colnames(data)))
     if (idcol_check == 1) {
@@ -51,8 +54,8 @@ typical_day <- function(data, lights_on) {
     ITime_check <- sum(df_classes == "ITime")
     if (ITime_check == 0) {
         df_is_posixt <- sapply(data, is.POSIXct)
-        if (sum(sapply(data, is.POSIXct)) == 0)
-        {return("Must contain a column of ITime or POSIXct")
+        if (sum(sapply(data, is.POSIXct)) == 0){
+            stop("Must contain a column of ITime or POSIXct")
         }
         colnames(data)[which(df_is_posixt)] <- "Time"
         data$TimesOnly <- data.table::as.ITime(data$Time)
@@ -89,47 +92,52 @@ typical_day <- function(data, lights_on) {
 
     colnames(all_typical)[which(colnames(all_typical) == "TimesOnly")] <- "Time"
 
+    if (include_lights == "TRUE") {
     # Add columns for status of room lights ----
-    lights_iterator <- 2
-    lights_initial <- as.numeric(as.ITime(lights_on*3600) - all_typical$Time[1])
-    if (lights_initial<0) {lights_initial <- lights_initial*-1}
-    all_typical$LightsTime <- lights_initial
-    while (lights_iterator < length(all_typical$Time)) {
-        if (as.numeric(all_typical[lights_iterator, data_time_column] -
+        lights_iterator <- 2
+        lights_initial <- as.numeric(as.ITime(lights_on*3600) -
+                                         all_typical$Time[1])
+        if (lights_initial<0) {lights_initial <- lights_initial*-1}
+            all_typical$LightsTime <- lights_initial
+
+        while (lights_iterator < length(all_typical$Time)) {
+            if (as.numeric(all_typical[lights_iterator, data_time_column] -
                        all_typical[lights_iterator - 1, data_time_column]) >=
                        0){
-            LightsNext <-
+                LightsNext <-
                 as.numeric(all_typical[lights_iterator, data_time_column] -
                            all_typical[lights_iterator-1, data_time_column])
-        }
+            }
 
-        if (as.numeric(all_typical[lights_iterator, data_time_column] -
+            if (as.numeric(all_typical[lights_iterator, data_time_column] -
                        all_typical[lights_iterator-1, data_time_column]) < 0){
-            LightsNext <-
+                LightsNext <-
                 as.numeric(all_typical[lights_iterator, data_time_column] -
                            all_typical[lights_iterator-1, data_time_column]) +
                            86400
+            }
+
+            if (lights_initial + LightsNext == 86400) {
+                lights_initial <- lights_initial-86400
+            }
+
+            all_typical$LightsTime[lights_iterator]<-lights_initial + LightsNext
+            lights_iterator <- lights_iterator+1
+            lights_initial <- lights_initial + LightsNext
         }
 
-        if (lights_initial+LightsNext==86400){lights_initial <-
-            lights_initial-86400
-        }
-        all_typical$LightsTime[lights_iterator]<-lights_initial + LightsNext
-        lights_iterator <- lights_iterator+1
-        lights_initial <- lights_initial+LightsNext
-    }
-
-    all_typical$LightsTime[length(all_typical$Time)] <-
-        lights_initial+as.numeric(all_typical$Time[length(all_typical$Time)]
+        all_typical$LightsTime[length(all_typical$Time)] <-
+            lights_initial+as.numeric(all_typical$Time[length(all_typical$Time)]
                                   -all_typical$Time[length(all_typical$Time)-1])
 
-    all_typical$LightsOn <- 0
-    all_typical <- all_typical %>% mutate(
-        LightsOn = case_when(
-            LightsTime < 43200 ~ "Y",
-            LightsTime >= 43200 ~ "N"
-        )
-    )
+        all_typical$LightsOn <- 0
+        all_typical <- all_typical %>% mutate(
+            LightsOn = case_when(
+                LightsTime < 43200 ~ "Y",
+                LightsTime >= 43200 ~ "N"
+                )
+            )
+    }
     # return ----
     return (all_typical)
 }

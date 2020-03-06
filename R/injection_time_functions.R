@@ -36,7 +36,7 @@ add_injtime <- function (data, injection_time) {
   t_next <- (data %>% select(.data$TimesOnly))[2,1]
   } else stop("No TimesOnly column - wrong dataframe as input")
 
-  t_delta<-t_next-t_begin
+  t_delta <- t_next-t_begin
 
   if (max(data$ElapsedTime < 86400)) {time_multiplier <- 3600
   } else {time_multiplier <- 86400}
@@ -46,7 +46,7 @@ add_injtime <- function (data, injection_time) {
   single_SN_data_length_list<-list()
   injection_times<-list()
 
-  for (typical_iterator in 1:unique(data$.id)%>%length()){
+  for (typical_iterator in 1:(unique(data$.id)%>%length())){
     single_SN_data<-filter(data, .data$.id ==
                              unique(data$.id)[typical_iterator])
     single_SN_data_postinj <- filter(single_SN_data, .data$TimesOnly >

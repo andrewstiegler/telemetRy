@@ -9,15 +9,27 @@
 #' @author Andrew Stiegler \email{andrew.stiegler@gmail.com}
 #' @format A data frame with 42495 rows and 13 variables:
 #' \describe{
-#'   \item{.id}{Serial number of telemeter, 6 or 7 digits}
 #'   \item{Time}{Time stamp of observation, POSIXct}
 #'   \item{TimesOnly}{Time of day from Time column, ITime}
 #'   \item{ElapsedTime}{Time elapsed since recording began, seconds}
-#'   \item{SN_SBP}{Systolic blood pressure for subject SN, mmHg}
-#'   \item{SN_DBP}{Diastolic blood pressure for subject SN, mmHg}
-#'   \item{SN_MAP}{Mean arterial blood pressure for subject SN, mmHg}
-#'   \item{SN_HR}{Heart rate for subject SN, bpm}
-#'   \item{SN_Temp}{Temperaturefor subject SN, degrees C}
-#'   \item{SN_Activity}{Activity score for subject SN, arbitrary units}
+#'   \item{1024071_SBP}{Systolic blood pressure for SN 1024071, mmHg}
+#'   \item{1024071_DBP}{Diastolic blood pressure for SN 1024071, mmHg}
+#'   \item{1024071_MAP}{Mean arterial blood pressure for SN 1024071, mmHg}
+#'   \item{1024071_HR}{Heart rate for SN 1024071, bpm}
+#'   \item{1024071_Temp}{Temperaturefor SN 1024071, degrees C}
+#'   \item{1024071_Activity}{Activity score for SN 1024071, arbitrary units}
+#'   \item{1024084_SBP}{Systolic blood pressure for SN 1024084, mmHg}
+#'   \item{1024084_DBP}{Diastolic blood pressure for SN 1024084, mmHg}
+#'   \item{1024084_MAP}{Mean arterial blood pressure for SN 1024084, mmHg}
+#'   \item{1024084_HR}{Heart rate for SN 1024084, bpm}
+#'   \item{1024084_Temp}{Temperaturefor SN 1024084, degrees C}
+#'   \item{1024084_Activity}{Activity score for SN 1024084, arbitrary units}
+#'   \item{1033468_SBP}{Systolic blood pressure for SN 1033468, mmHg}
+#'   \item{1033468_DBP}{Diastolic blood pressure for SN 1033468, mmHg}
+#'   \item{1033468_MAP}{Mean arterial blood pressure for SN 1033468, mmHg}
+#'   \item{1033468_HR}{Heart rate for SN 1033468, bpm}
+#'   \item{1033468_Temp}{Temperaturefor SN 1033468, degrees C}
+#'   \item{1033468_Activity}{Activity score for SN 1033468, arbitrary units}
+#'
 #' }
 NULL
