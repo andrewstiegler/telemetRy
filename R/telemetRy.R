@@ -34,6 +34,7 @@
 #' @importFrom lubridate is.POSIXct
 #' @importFrom rlang .data
 #' @importFrom rlang quo_get_expr
+#' @importFrom stringr str_extract_all
 #' @importFrom utils head
 #' @importFrom utils stack
 #' @importFrom utils tail
