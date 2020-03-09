@@ -24,7 +24,7 @@ typical_day <- function(data, lights_on, include_lights = FALSE) {
     if (!df_check) stop("'data' must be dataframe.")
 
     idcol_check <- sum(grep(".id", colnames(data)))
-    if (idcol_check == 1) {
+    if (idcol_check > 0) {
 
         data_list_wide <- list()
         for (wide_iterator in 1:length(data$.id %>% unique())){
