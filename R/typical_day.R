@@ -97,7 +97,8 @@ typical_day <- function(data, lights_on, include_lights = FALSE) {
         lights_iterator <- 2
         lights_initial <- as.numeric(as.ITime(lights_on*3600) -
                                          all_typical$Time[1])
-        if (lights_initial<0) {lights_initial <- lights_initial*-1}
+        if (lights_initial > 12) {lights_initial <- 86400 - lights_initial }
+        if (lights_initial < 0) {lights_initial <- lights_initial*-1}
             all_typical$LightsTime <- lights_initial
 
         while (lights_iterator < length(all_typical$Time)) {
