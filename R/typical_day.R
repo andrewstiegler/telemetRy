@@ -76,13 +76,14 @@ typical_day <- function(data, lights_on, include_lights = FALSE) {
     data_time_column <- which(sapply(data, is.POSIXct))
 
     typical_day <- data %>% select(-.data$Time) %>% head(total_times)
+    typical_day$TimesOnly <- as.numeric(typical_day$TimesOnly)
 
     for (times_iterator in 1:total_times) {
         single_time <- data %>% filter(.data$TimesOnly ==
                                            time_column[times_iterator]) %>%
             select(-data_time_column) %>%
             colMeans(na.rm = TRUE)
-        typical_day[times_iterator,] <- single_time
+        typical_day[times_iterator,] <- as.list(single_time)
         times_iterator<-times_iterator+1
     }
 
@@ -91,6 +92,7 @@ typical_day <- function(data, lights_on, include_lights = FALSE) {
     } else all_typical <- typical_day
 
     colnames(all_typical)[which(colnames(all_typical) == "TimesOnly")] <- "Time"
+    all_typical$Time <- as.ITime(all_typical$Time)
 
     if (include_lights == "TRUE") {
     # Add columns for status of room lights ----
