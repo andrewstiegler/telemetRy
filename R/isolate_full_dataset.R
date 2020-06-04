@@ -59,7 +59,7 @@ isolate_parameter <- function (data, parameter, mean_col=FALSE) {
 
     if (sum(grepl(".id", colnames(data))) == 0) {
         parameter_joined_full <- data %>%
-            select(1, 2, 3, grep(quo_get_expr(enquo(parameter)),
+            select(1, grep(quo_get_expr(enquo(parameter)),
                                  colnames(data)))
         if (mean_col == TRUE) {
             parameter_joined_full$mean <-
