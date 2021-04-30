@@ -40,6 +40,7 @@
 #' @importFrom utils tail
 #'
 #' @export DSI_export_to_dataframe
+#' @export DSI_export_to_dataframe_fast
 #' @export circadian_avg
 #' @export typical_day
 #' @export typical_average

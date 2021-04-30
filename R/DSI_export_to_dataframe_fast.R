@@ -18,7 +18,7 @@
 # .id (telemeter SN), Time, ElapsedTime (various units), BP parameters
 
 
-DSI_export_to_dataframe_test <- function (selected_file, output_format = "W") {
+DSI_export_to_dataframe_fast <- function (selected_file, output_format = "W") {
     filetype_check <- readxl::excel_format(selected_file)
     if (is.na(filetype_check)) {
         stop("Must select Excel file")

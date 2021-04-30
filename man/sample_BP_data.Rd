@@ -5,7 +5,8 @@
 \alias{sample_BP_data}
 \title{Example telemetry data from one cohort of mice implanted with blood
 pressure telemeters.}
-\format{A data frame with 42495 rows and 13 variables:
+\format{
+A data frame with 42495 rows and 13 variables:
 \describe{
   \item{Time}{Time stamp of observation, POSIXct}
   \item{TimesOnly}{Time of day from Time column, ITime}
@@ -29,7 +30,8 @@ pressure telemeters.}
   \item{1033468_Temp}{Temperaturefor SN 1033468, degrees C}
   \item{1033468_Activity}{Activity score for SN 1033468, arbitrary units}
 
-}}
+}
+}
 \description{
 A dataset containing time and blood pressure telemeter parameters for 15 mice
 over approximately 4 days.
